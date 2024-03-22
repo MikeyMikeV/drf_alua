@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <header>
+        <a href="/"><p>Main</p></a>
+        <a href="/rest/"><p>API</p></a>
+        <a href="/admin"><p>Admin</p></a>
+        {% if not user.is_authenticated %}
+        {% comment %} <a href="{% url '' %}"><p>Login</p></a> {% endcomment %}
+        {% comment %} <a href="{% url '' %}"><p>registration</p></a> {% endcomment %}
+        {% else %}
+        <p>Hello {{user.username}}<a href="">Logout</a></p>
+        {% endif %}
+    </header>
+    <main>
+        <div>
+            <title>Music Form</title>
+            <form action="">
+                <p>Title: <input type="text" name="title"></p>
+                <p>Music file: <input type="file" src="" alt="" name="file"></p>
+                <p><input type="text" name="desc"></p>
+                <p><input type="file" name="cover" onchange="file_base64_converter(this);"></p>
+                <p><input type="text" name="author"></p>
+                <p><input type="time" name="time"></p>
+                <p><input type="text" name="genre"></p>
+                <input type="button" value="Save" name="submit">
+            </form>
+        </div>
+    </main>
+    <footer>
+
+    </footer>
+
+    <script>
+        let title = document.getElementsByName('title')[0]
+        let file = document.getElementsByName('file')[0]
+        let desc = document.getElementsByName('desc')[0]
+        let cover = document.getElementsByName('cover')[0]
+        let author = document.getElementsByName('author')[0]
+        let time = document.getElementsByName('time')[0]
+        let genre = document.getElementsByName('genre')[0]
+        let submitButton = document.getElementsByName('submit')[0]
+        let base64_file = null
+
+        function file_base64_converter(input) {
+            if (input.files && input.files[0]){
+                var reader = new FileReader();
+                reader.onload = function (params) {
+                    base64_file = params.target.result
+                    console.log(base64_file)
+                }
+                reader.readAsDataURL(input.files[0])
+            }
+        }
+        
+        function post_music(){
+            console.log(base64_file)
+            const url = 'http://127.0.0.1:8000/rest/music/'
+            const data = {
+                "title":  title.value,
+                "file": null,
+                "desc": desc.value,
+                "cover": base64_file,
+                "author": author.value,
+                "time": time.value,
+                "genre":  genre.value,
+            }
+
+            const response = fetch(url,
+                {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        Accept: "application/json",
+                        'X-CSRFToken':'{{ csrf_token }}',   
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "same-origin",
+                    body:JSON.stringify(data)
+                }
+            )
+        }
+        submitButton.addEventListener('click', post_music)
+    </script>
+</body>
+</html>
